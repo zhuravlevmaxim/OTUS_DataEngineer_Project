@@ -20,8 +20,6 @@ public class ServiceProducer {
     }
     @Value("${kafka.brokers}")
     private String kafkaBrokers;
-//    @Value("${kafka.client.id}")
-//    private String kafkaClientId;
     @Value("${kafka.group.id.config}")
     private String kafkaGroupIdConfig;
     @Value("${kafka.topic}")

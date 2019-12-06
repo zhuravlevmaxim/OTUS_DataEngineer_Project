@@ -17,36 +17,38 @@ public class DataGenerator {
     private ThreadLocalRandom random = ThreadLocalRandom.current();
 
     private StringBuilder generateNumber() {
-        StringBuilder result = new StringBuilder("number:");
+        StringBuilder result = new StringBuilder("\"number\":\"");
         return result.append(random.nextLong(99_999_999l, 999_999_99_99l));
     }
 
     private StringBuilder generateCity() {
-        StringBuilder result = new StringBuilder("city:");
+        StringBuilder result = new StringBuilder("\"city\":\"");
         return result.append(cities[random.nextInt(cities.length)]);
     }
 
     private StringBuilder getDateTime() {
-        StringBuilder result = new StringBuilder("datetime:");
+        StringBuilder result = new StringBuilder("\"datetime\":\"");
         return result.append(dateTimeFormatter.format(LocalDateTime.now()));
     }
 
     private StringBuilder generatePayment() {
-        StringBuilder result = new StringBuilder("payment:");
+        StringBuilder result = new StringBuilder("\"payment\":\"");
         return result
-                .append(random.nextInt(-11, 100_000));
+                .append(random.nextInt(-11, 100_000))
+                .append("\"");
     }
 
     public String getData() {
-        String result = generateNumber()
-                .append(":")
+        String result = new StringBuilder("{")
+                .append(generateNumber())
+                .append(",")
                 .append(generateCity())
-                .append(":")
+                .append(",")
                 .append(getDateTime())
-                .append(":")
-                .append(generatePayment()).toString();
+                .append(",")
+                .append(generatePayment())
+                .append("}").toString();
         System.out.println(result);
         return result;
     }
-
 }

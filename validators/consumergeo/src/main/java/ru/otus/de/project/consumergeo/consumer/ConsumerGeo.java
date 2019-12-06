@@ -47,9 +47,7 @@ public class ConsumerGeo {
     private String producerInvalidTopic;
 
     private Validator validator;
-
     private ObjectMapper objectMapper = new ObjectMapper();
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     private static KafkaConsumer<String, String> consumer;
     private static KafkaProducer<String, String> producer;

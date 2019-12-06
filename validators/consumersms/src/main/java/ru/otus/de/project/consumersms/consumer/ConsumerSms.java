@@ -1,19 +1,33 @@
 package ru.otus.de.project.consumersms.consumer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.otus.de.project.consumersms.model.Sms;
+import ru.otus.de.project.consumersms.validation.Validator;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 
 @Service
 public class ConsumerSms {
+
+    @Autowired
+    public ConsumerSms(Validator validator) {
+        this.validator = validator;
+    }
 
     @Value("${kafka.brokers}")
     private String kafkaBrokers;
@@ -26,7 +40,16 @@ public class ConsumerSms {
     @Value("${kafka.partition}")
     private int kafkaPartition;
 
+    @Value("${kafka.producer.valid.topic}")
+    private String producerValidTopic;
+    @Value("${kafka.producer.invalid.topic}")
+    private String producerInvalidTopic;
+
+    private Validator validator;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     private static KafkaConsumer<String, String> consumer;
+    private static KafkaProducer<String, String> producer;
 
     private KafkaConsumer<String, String> getConsumer() {
         Properties consumerProperties = new Properties();
@@ -41,20 +64,50 @@ public class ConsumerSms {
         return result;
     }
 
+    private KafkaProducer<String, String> getProducer() {
+        Properties producerProperties = new Properties();
+        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        KafkaProducer<String, String> result = new KafkaProducer(producerProperties);
+        return result;
+    }
+
     public void getMessage(boolean isGetMessage) {
 
         if (consumer == null) {
             consumer = getConsumer();
+        }
+        if (producer == null) {
+            producer = getProducer();
         }
 
         while(isGetMessage) {
             ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
             consumerRecords.forEach(consumerRecord -> {
                 System.out.println("KEY: " + consumerRecord.key());
-                System.out.println("VALUE: " + consumerRecord.value());
+                try {
+                    String kafkaValue = consumerRecord.value();
+                    Sms sms = objectMapper.readValue(kafkaValue, Sms.class);
+                    if (validator.isSmsValid(sms)) {
+                        ProducerRecord<String, String> producerRecord =
+                                new ProducerRecord<>(producerValidTopic, kafkaPartition, kafkaGroupIdConfig, kafkaValue);
+                        producer.send(producerRecord);
+                    } else {
+                        ProducerRecord<String, String> producerRecord =
+                                new ProducerRecord<>(producerInvalidTopic, kafkaPartition, kafkaGroupIdConfig, kafkaValue);
+                        producer.send(producerRecord);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
         }
+
         consumer.close();
         consumer = null;
+
+        producer.close();
+        producer = null;
     }
 }

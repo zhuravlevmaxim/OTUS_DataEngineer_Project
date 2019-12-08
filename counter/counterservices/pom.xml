@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.otus.de.project</groupId>
-    <artifactId>counterTopic-services</artifactId>
+    <artifactId>counter-topic-services</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <parent>
@@ -38,7 +38,7 @@
     </dependencies>
 
     <build>
-        <finalName>counterTopic-services</finalName>
+        <finalName>counter-topic-services</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

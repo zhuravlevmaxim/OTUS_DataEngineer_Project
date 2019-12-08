@@ -16,7 +16,6 @@ public class CounterTopic {
     public CounterTopic(MeterRegistry registry) {
         this.registry = registry;
         this.counterTopicMap = new ConcurrentHashMap<>();
-        System.out.println("CounterTopic");
     }
 
     private MeterRegistry registry;

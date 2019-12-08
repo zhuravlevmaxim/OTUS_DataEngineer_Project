@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.otus.de.project.consumerpayment.model.Payment;
@@ -22,6 +23,11 @@ import java.util.Properties;
 
 @Service
 public class ConsumerPayment {
+
+    @Autowired
+    public ConsumerPayment(Validator validator) {
+        this.validator = validator;
+    }
 
     @Value("${kafka.brokers}")
     private String kafkaBrokers;

@@ -18,17 +18,20 @@ public class DataGenerator {
 
     private StringBuilder generateNumber() {
         StringBuilder result = new StringBuilder("\"number\":\"");
-        return result.append(random.nextLong(99_999_999l, 999_999_99_99l));
+        return result.append(random.nextLong(99_999_999l, 999_999_99_99l))
+                .append("\"");
     }
 
     private StringBuilder generateCity() {
         StringBuilder result = new StringBuilder("\"city\":\"");
-        return result.append(cities[random.nextInt(cities.length)]);
+        return result.append(cities[random.nextInt(cities.length)])
+                .append("\"");
     }
 
     private StringBuilder getDateTime() {
         StringBuilder result = new StringBuilder("\"datetime\":\"");
-        return result.append(dateTimeFormatter.format(LocalDateTime.now()));
+        return result.append(dateTimeFormatter.format(LocalDateTime.now()))
+                .append("\"");
     }
 
     private StringBuilder generatePayment() {

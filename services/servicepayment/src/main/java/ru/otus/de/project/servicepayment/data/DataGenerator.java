@@ -37,7 +37,7 @@ public class DataGenerator {
     private StringBuilder generatePayment() {
         StringBuilder result = new StringBuilder("\"payment\":\"");
         return result
-                .append(random.nextInt(-11, 100_000))
+                .append(random.nextDouble(-11, 10_000))
                 .append("\"");
     }
 

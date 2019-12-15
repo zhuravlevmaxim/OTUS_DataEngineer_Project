@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import ru.otus.de.project.servicesms.data.DataGenerator;
 
 import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class ServiceProducer {
@@ -51,7 +52,7 @@ public class ServiceProducer {
             producer.send(producerRecord);
 
             try {
-                Thread.sleep(500);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(100, 500));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

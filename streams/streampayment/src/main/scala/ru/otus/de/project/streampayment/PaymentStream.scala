@@ -10,7 +10,10 @@ object PaymentStream extends App {
   val kafkaTopic = "payment-service"
   val kafkaBootstrapServers = "127.0.0.1:9092"
 
-  val spark = SparkSession.builder().master("local[2]").appName(appName).getOrCreate()
+  val spark = SparkSession.builder()
+    .master("local[2]")
+    .config("spark.ui.port", "4043")
+    .appName(appName).getOrCreate()
   Logger.getLogger("org").setLevel(Level.OFF)
 
   val inputStream = spark.readStream
@@ -40,7 +43,14 @@ object PaymentStream extends App {
       window($"timestamp", "20 seconds", "10 seconds")
         .alias("load_dt"), $"city").sum("payment").as("payments_sum")
 
-  transformedStream.writeStream.outputMode("append").format("console").start()
+  transformedStream.writeStream.outputMode("append")
+    .format("csv")
+    .outputMode("append")
+    .option("path", "./payment_stream_result/")
+    .partitionBy("load_dt")
+    .option("checkpointLocation", "./checkpoint/")
+    .start()
+
 
   spark.streams.awaitAnyTermination()
 }

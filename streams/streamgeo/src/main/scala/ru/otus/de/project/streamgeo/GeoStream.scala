@@ -12,7 +12,11 @@ object GeoStream extends App {
   val kafkaTopic = "geo-service"
   val kafkaBootstrapServers = "127.0.0.1:9092"
 
-  val spark = SparkSession.builder().master("local[2]").appName(appName).getOrCreate()
+  val spark = SparkSession.builder()
+    .master("local[2]")
+    .config("spark.ui.port", "4041")
+    .appName(appName).getOrCreate()
+
   Logger.getLogger("org").setLevel(Level.OFF)
 
   val inputStream = spark.readStream
@@ -39,7 +43,13 @@ object GeoStream extends App {
       window($"timestamp", "20 seconds", "10 seconds")
         .alias("load_dt"), $"city").count()
 
-  transformedStream.writeStream.outputMode("append").format("console").start()
+  transformedStream.writeStream.format("console").start()
+//    .format("csv")
+//    .outputMode("append")
+//    .option("path", "./geo_stream_result/")
+//    .partitionBy("load_dt")
+//    .option("checkpointLocation", "./checkpoint/")
+//    .start()
 
   spark.streams.awaitAnyTermination()
 }

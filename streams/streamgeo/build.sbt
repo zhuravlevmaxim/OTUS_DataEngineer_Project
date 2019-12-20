@@ -26,12 +26,8 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-streaming" % "2.4.4" % "provided",
       "org.apache.spark" %% "spark-sql" % "2.4.4" % "provided",
-
+      "org.apache.spark" %% "spark-core" % "2.4.4" % "provided",
       "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.4" % "provided"
-
-//      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-//      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-//      "com.holdenkarau" %% "spark-testing-base" % "2.3.0_0.9.0" % "test"
     ),
 
     // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)

@@ -2,6 +2,16 @@ version: '3'
 
 services:
 
+  kafka:
+    image: spotify/kafka
+    environment:
+      ADVERTISED_HOST: 127.0.0.1
+      ADVERTISED_PORT: 9092
+      AUTO_CREATE_TOPICS: 'true'
+    ports:
+      - '2181:2181'
+      - '9092:9092'
+      
   postgres:
     image: postgres
     environment:
@@ -14,16 +24,6 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./postgres_data:/var/lib/postgresql/data
-
-  kafka:
-    image: spotify/kafka
-    environment:
-      ADVERTISED_HOST: 127.0.0.1
-      ADVERTISED_PORT: 9092
-      AUTO_CREATE_TOPICS: 'true'
-    ports:
-      - '2181:2181'
-      - '9092:9092'
 
   prometheus:
     image: prom/prometheus

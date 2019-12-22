@@ -45,6 +45,7 @@ public class ConsumerSms {
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     private static KafkaConsumer<String, String> consumer;
+    private static Thread threadConsumer;
 
     private KafkaConsumer<String, String> getConsumer() {
         Properties consumerProperties = new Properties();
@@ -59,30 +60,48 @@ public class ConsumerSms {
         return result;
     }
 
-    public void getMessage(boolean isGetMessage) {
+    public String getMessage(boolean isGetMessage) {
 
         if (consumer == null) {
             consumer = getConsumer();
         }
 
-        while(isGetMessage) {
-            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
-            consumerRecords.forEach(consumerRecord -> {
-                System.out.println("KEY: " + consumerRecord.key());
-                try {
-                    Sms sms = objectMapper.readValue(consumerRecord.value(), Sms.class);
-                    SmsValid smsValid = new SmsValid();
-                    smsValid.setNumber(Long.decode(sms.getNumber()));
-                    smsValid.setCity(sms.getCity());
-                    smsValid.setDateTime(LocalDateTime.parse(sms.getDatetime(), formatter));
-                    smsValid.setSms(sms.getSms());
-                    smsValidRepository.save(smsValid);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+        if(!isGetMessage && threadConsumer != null) {
+            threadConsumer.interrupt();
+            threadConsumer = null;
+            return "valid_bd_writer_sms is stoped!";
         }
-        consumer.close();
-        consumer = null;
+
+        if(!isGetMessage && threadConsumer == null) {
+            return "valid_bd_writer_sms was stoped!";
+        }
+
+        if (isGetMessage && threadConsumer == null) {
+            threadConsumer = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+                    consumerRecords.forEach(consumerRecord -> {
+                        try {
+                            System.out.println(consumerRecord.value());
+                            Sms sms = objectMapper.readValue(consumerRecord.value(), Sms.class);
+                            SmsValid smsValid = new SmsValid();
+                            smsValid.setNumber(Long.decode(sms.getNumber()));
+                            smsValid.setCity(sms.getCity());
+                            smsValid.setDateTime(LocalDateTime.parse(sms.getDatetime(), formatter));
+                            smsValid.setSms(sms.getSms());
+                            smsValidRepository.save(smsValid);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+                consumer.close();
+                consumer = null;
+            });
+            threadConsumer.start();
+            return "valid_bd_writer_sms is start!";
+        }
+
+        return "valid_bd_writer_sms was started!";
     }
 }

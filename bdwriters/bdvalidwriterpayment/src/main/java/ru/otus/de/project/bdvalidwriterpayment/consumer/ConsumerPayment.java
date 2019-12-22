@@ -45,6 +45,7 @@ public class ConsumerPayment {
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     private static KafkaConsumer<String, String> consumer;
+    private static Thread threadConsumer;
 
     private KafkaConsumer<String, String> getConsumer() {
         Properties consumerProperties = new Properties();
@@ -59,30 +60,48 @@ public class ConsumerPayment {
         return result;
     }
 
-    public void getMessage(boolean isGetMessage) {
+    public String getMessage(boolean isGetMessage) {
 
         if (consumer == null) {
             consumer = getConsumer();
         }
 
-        while(isGetMessage) {
-            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
-            consumerRecords.forEach(consumerRecord -> {
-                System.out.println("KEY: " + consumerRecord.key());
-                try {
-                    Payment payment = objectMapper.readValue(consumerRecord.value(), Payment.class);
-                    PaymentValid paymentValid = new PaymentValid();
-                    paymentValid.setNumber(Long.decode(payment.getNumber()));
-                    paymentValid.setCity(payment.getCity());
-                    paymentValid.setDateTime(LocalDateTime.parse(payment.getDatetime(), formatter));
-                    paymentValid.setPayment(Double.parseDouble(payment.getPayment()));
-                    paymentValidRepository.save(paymentValid);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+        if(!isGetMessage && threadConsumer != null) {
+            threadConsumer.interrupt();
+            threadConsumer = null;
+            return "valid_bd_writer_payment is stoped!";
         }
-        consumer.close();
-        consumer = null;
+
+        if(!isGetMessage && threadConsumer == null) {
+            return "valid_bd_writer_payment was stoped!";
+        }
+
+        if (isGetMessage && threadConsumer == null) {
+            threadConsumer = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+                    consumerRecords.forEach(consumerRecord -> {
+                        try {
+                            System.out.println(consumerRecord.value());
+                            Payment payment = objectMapper.readValue(consumerRecord.value(), Payment.class);
+                            PaymentValid paymentValid = new PaymentValid();
+                            paymentValid.setNumber(Long.decode(payment.getNumber()));
+                            paymentValid.setCity(payment.getCity());
+                            paymentValid.setDateTime(LocalDateTime.parse(payment.getDatetime(), formatter));
+                            paymentValid.setPayment(Double.parseDouble(payment.getPayment()));
+                            paymentValidRepository.save(paymentValid);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+                consumer.close();
+                consumer = null;
+            });
+            threadConsumer.start();
+            return "valid_bd_writer_payment is start!";
+        }
+
+        return "valid_bd_writer_payment was started!";
     }
 }

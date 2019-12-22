@@ -51,6 +51,8 @@ public class ConsumerSms {
     private static KafkaConsumer<String, String> consumer;
     private static KafkaProducer<String, String> producer;
 
+    private static Thread threadProducerConsumer;
+
     private KafkaConsumer<String, String> getConsumer() {
         Properties consumerProperties = new Properties();
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
@@ -73,7 +75,7 @@ public class ConsumerSms {
         return result;
     }
 
-    public void getMessage(boolean isGetMessage) {
+    public String getMessage(boolean isGetMessage) {
 
         if (consumer == null) {
             consumer = getConsumer();
@@ -82,32 +84,56 @@ public class ConsumerSms {
             producer = getProducer();
         }
 
-        while(isGetMessage) {
-            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
-            consumerRecords.forEach(consumerRecord -> {
-                System.out.println("KEY: " + consumerRecord.key());
-                try {
-                    String kafkaValue = consumerRecord.value();
-                    Sms sms = objectMapper.readValue(kafkaValue, Sms.class);
-                    if (validator.isSmsValid(sms)) {
-                        ProducerRecord<String, String> producerRecord =
-                                new ProducerRecord<>(producerValidTopic, kafkaPartition, kafkaGroupIdConfig, kafkaValue);
-                        producer.send(producerRecord);
-                    } else {
-                        ProducerRecord<String, String> producerRecord =
-                                new ProducerRecord<>(producerInvalidTopic, kafkaPartition, kafkaGroupIdConfig, kafkaValue);
-                        producer.send(producerRecord);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+        if(!isGetMessage && threadProducerConsumer != null) {
+            threadProducerConsumer.interrupt();
+
+            producer.close();
+            producer = null;
+
+            consumer.close();
+            consumer = null;
+
+            threadProducerConsumer = null;
+            return "validator_sms is stoped!";
         }
 
-        consumer.close();
-        consumer = null;
+        if(!isGetMessage && threadProducerConsumer == null) {
+            return "validator_sms was stoped!";
+        }
 
-        producer.close();
-        producer = null;
+        if (isGetMessage && threadProducerConsumer == null) {
+            threadProducerConsumer = new Thread(() -> {
+                while(!Thread.currentThread().isInterrupted()) {
+                    ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+                    consumerRecords.forEach(consumerRecord -> {
+                        try {
+                            String kafkaValue = consumerRecord.value();
+                            Sms sms = objectMapper.readValue(kafkaValue, Sms.class);
+                            if (validator.isSmsValid(sms)) {
+                                System.out.println(producerValidTopic);
+                                ProducerRecord<String, String> producerRecord =
+                                        new ProducerRecord<>(
+                                                producerValidTopic, kafkaPartition, kafkaGroupIdConfig, kafkaValue
+                                        );
+                                producer.send(producerRecord);
+                            } else {
+                                System.out.println(producerInvalidTopic);
+                                ProducerRecord<String, String> producerRecord =
+                                        new ProducerRecord<>(
+                                                producerInvalidTopic, kafkaPartition, kafkaGroupIdConfig, kafkaValue
+                                        );
+                                producer.send(producerRecord);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+            });
+            threadProducerConsumer.start();
+            return "validator_sms is start!";
+        }
+
+        return "validator_sms was started!";
     }
 }

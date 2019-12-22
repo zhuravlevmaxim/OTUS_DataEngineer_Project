@@ -21,8 +21,6 @@ public class ServiceProducer {
     }
     @Value("${kafka.brokers}")
     private String kafkaBrokers;
-//    @Value("${kafka.client.id}")
-//    private String kafkaClientId;
     @Value("${kafka.group.id.config}")
     private String kafkaGroupIdConfig;
     @Value("${kafka.topic}")
@@ -32,6 +30,7 @@ public class ServiceProducer {
 
     private DataGenerator dataGenerator;
     private static KafkaProducer<String, String> producer;
+    private static Thread threadProducer;
 
     private KafkaProducer<String, String> getProducer() {
         Properties producerProperties = new Properties();
@@ -42,24 +41,43 @@ public class ServiceProducer {
         return result;
     }
 
-    public void sendData(boolean isSendData) {
+    public String sendData(boolean isSendData) {
 
         if(producer == null) {
             producer = getProducer();
         }
-        while(isSendData) {
 
-            ProducerRecord<String, String> producerRecord =
-                    new ProducerRecord<>(kafkaTopic, kafkaPartition, kafkaGroupIdConfig, dataGenerator.getData());
-            producer.send(producerRecord);
-
-            try {
-                Thread.sleep(ThreadLocalRandom.current().nextInt(500, 900));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        if(!isSendData && threadProducer != null) {
+            threadProducer.interrupt();
+            producer.close();
+            producer = null;
+            threadProducer = null;
+            return "producer is stoped!";
         }
-        producer.close();
-        producer = null;
+
+        if(!isSendData && threadProducer == null) {
+            return "producer was stoped!";
+        }
+
+        if (isSendData && threadProducer == null) {
+            threadProducer = new Thread(() -> {
+                while(!Thread.currentThread().isInterrupted()) {
+                    ProducerRecord<String, String> producerRecord =
+                            new ProducerRecord<>(
+                                    kafkaTopic, kafkaPartition, kafkaGroupIdConfig, dataGenerator.getData()
+                            );
+                    producer.send(producerRecord);
+                    try {
+                        Thread.sleep(ThreadLocalRandom.current().nextInt(500, 900));
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            });
+            threadProducer.start();
+            return "producer is start!";
+        }
+
+        return "producer was started!";
     }
 }

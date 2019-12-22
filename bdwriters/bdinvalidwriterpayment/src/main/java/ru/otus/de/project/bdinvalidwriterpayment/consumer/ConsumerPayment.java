@@ -40,7 +40,9 @@ public class ConsumerPayment {
     private PaymentInvalidRepository paymentInvalidRepository;
 
     private ObjectMapper objectMapper = new ObjectMapper();
+
     private static KafkaConsumer<String, String> consumer;
+    private static Thread threadConsumer;
 
     private KafkaConsumer<String, String> getConsumer() {
         Properties consumerProperties = new Properties();
@@ -55,30 +57,48 @@ public class ConsumerPayment {
         return result;
     }
 
-    public void getMessage(boolean isGetMessage) {
+    public String getMessage(boolean isGetMessage) {
 
         if (consumer == null) {
             consumer = getConsumer();
         }
 
-        while(isGetMessage) {
-            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
-            consumerRecords.forEach(consumerRecord -> {
-                System.out.println("KEY: " + consumerRecord.key());
-                try {
-                    Payment payment = objectMapper.readValue(consumerRecord.value(), Payment.class);
-                    PaymentInvalid paymentValid = new PaymentInvalid();
-                    paymentValid.setNumber(payment.getNumber());
-                    paymentValid.setCity(payment.getCity());
-                    paymentValid.setDateTime(payment.getDatetime());
-                    paymentValid.setPayment(payment.getPayment());
-                    paymentInvalidRepository.save(paymentValid);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+        if(!isGetMessage && threadConsumer != null) {
+            threadConsumer.interrupt();
+            threadConsumer = null;
+            return "invalid_bd_writer_payment is stoped!";
         }
-        consumer.close();
-        consumer = null;
+
+        if(!isGetMessage && threadConsumer == null) {
+            return "invalid_bd_writer_payment was stoped!";
+        }
+
+        if (isGetMessage && threadConsumer == null) {
+            threadConsumer = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+                    consumerRecords.forEach(consumerRecord -> {
+                        try {
+                            System.out.println(consumerRecord.value());
+                            Payment payment = objectMapper.readValue(consumerRecord.value(), Payment.class);
+                            PaymentInvalid paymentValid = new PaymentInvalid();
+                            paymentValid.setNumber(payment.getNumber());
+                            paymentValid.setCity(payment.getCity());
+                            paymentValid.setDateTime(payment.getDatetime());
+                            paymentValid.setPayment(payment.getPayment());
+                            paymentInvalidRepository.save(paymentValid);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+                consumer.close();
+                consumer = null;
+            });
+            threadConsumer.start();
+            return "invalid_bd_writer_payment is start!";
+        }
+
+        return "invalid_bd_writer_payment was started!";
     }
 }

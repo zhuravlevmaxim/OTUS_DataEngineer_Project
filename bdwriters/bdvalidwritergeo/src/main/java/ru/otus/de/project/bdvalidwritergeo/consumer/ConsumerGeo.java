@@ -45,6 +45,7 @@ public class ConsumerGeo {
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     private static KafkaConsumer<String, String> consumer;
+    private static Thread threadConsumer;
 
     private KafkaConsumer<String, String> getConsumer() {
         Properties consumerProperties = new Properties();
@@ -59,31 +60,68 @@ public class ConsumerGeo {
         return result;
     }
 
-    public void getMessage(boolean isGetMessage) {
+    public String getMessage(boolean isGetMessage) {
 
         if (consumer == null) {
             consumer = getConsumer();
         }
 
-        while(isGetMessage) {
-            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
-            consumerRecords.forEach(consumerRecord -> {
-                System.out.println("KEY: " + consumerRecord.key());
-                try {
-                    Geo geo = objectMapper.readValue(consumerRecord.value(), Geo.class);
-                    GeoValid geoValid = new GeoValid();
-                    geoValid.setNumber(Long.decode(geo.getNumber()));
-                    geoValid.setCity(geo.getCity());
-                    geoValid.setDateTime(LocalDateTime.parse(geo.getDatetime(), formatter));
-                    geoValid.setLat(Double.parseDouble(geo.getLat()));
-                    geoValid.setLng(Double.parseDouble(geo.getLng()));
-                    geoValidRepository.save(geoValid);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+        if(!isGetMessage && threadConsumer != null) {
+            threadConsumer.interrupt();
+            threadConsumer = null;
+            return "valid_bd_writer_geo is stoped!";
         }
-        consumer.close();
-        consumer = null;
+
+        if(!isGetMessage && threadConsumer == null) {
+            return "valid_bd_writer_geo was stoped!";
+        }
+
+        if (isGetMessage && threadConsumer == null) {
+            threadConsumer = new Thread(() -> {
+                while(!Thread.currentThread().isInterrupted()) {
+                    ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+                    consumerRecords.forEach(consumerRecord -> {
+                        try {
+                            System.out.println(consumerRecord.value());
+                            Geo geo = objectMapper.readValue(consumerRecord.value(), Geo.class);
+                            GeoValid geoValid = new GeoValid();
+                            geoValid.setNumber(Long.decode(geo.getNumber()));
+                            geoValid.setCity(geo.getCity());
+                            geoValid.setDateTime(LocalDateTime.parse(geo.getDatetime(), formatter));
+                            geoValid.setLat(Double.parseDouble(geo.getLat()));
+                            geoValid.setLng(Double.parseDouble(geo.getLng()));
+                            geoValidRepository.save(geoValid);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+                consumer.close(Duration.ofSeconds(1));
+                consumer = null;
+            });
+            threadConsumer.start();
+            return "valid_bd_writer_geo is start!";
+        }
+        return "valid_bd_writer_geo was started!";
+
+//            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+//            consumerRecords.forEach(consumerRecord -> {
+//                System.out.println("KEY: " + consumerRecord.key());
+//                try {
+//                    Geo geo = objectMapper.readValue(consumerRecord.value(), Geo.class);
+//                    GeoValid geoValid = new GeoValid();
+//                    geoValid.setNumber(Long.decode(geo.getNumber()));
+//                    geoValid.setCity(geo.getCity());
+//                    geoValid.setDateTime(LocalDateTime.parse(geo.getDatetime(), formatter));
+//                    geoValid.setLat(Double.parseDouble(geo.getLat()));
+//                    geoValid.setLng(Double.parseDouble(geo.getLng()));
+//                    geoValidRepository.save(geoValid);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//        }
+//        consumer.close();
+//        consumer = null;
     }
 }

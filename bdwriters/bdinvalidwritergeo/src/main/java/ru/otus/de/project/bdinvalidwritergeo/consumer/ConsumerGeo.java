@@ -15,7 +15,6 @@ import ru.otus.de.project.bdinvalidwritergeo.repository.GeoInvalidRepository;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -41,9 +40,9 @@ public class ConsumerGeo {
     private GeoInvalidRepository geoInvalidRepository;
 
     private ObjectMapper objectMapper = new ObjectMapper();
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     private static KafkaConsumer<String, String> consumer;
+    private static Thread threadConsumer;
 
     private KafkaConsumer<String, String> getConsumer() {
         Properties consumerProperties = new Properties();
@@ -58,31 +57,70 @@ public class ConsumerGeo {
         return result;
     }
 
-    public void getMessage(boolean isGetMessage) {
+    public String getMessage(boolean isGetMessage) {
 
         if (consumer == null) {
             consumer = getConsumer();
         }
 
-        while(isGetMessage) {
-            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
-            consumerRecords.forEach(consumerRecord -> {
-                System.out.println("KEY: " + consumerRecord.key());
-                try {
-                    Geo geo = objectMapper.readValue(consumerRecord.value(), Geo.class);
-                    GeoInvalid geoInvalid = new GeoInvalid();
-                    geoInvalid.setNumber(geo.getNumber());
-                    geoInvalid.setCity(geo.getCity());
-                    geoInvalid.setDateTime(geo.getDatetime());
-                    geoInvalid.setLat(geo.getLat());
-                    geoInvalid.setLng(geo.getLng());
-                    geoInvalidRepository.save(geoInvalid);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
+        if(!isGetMessage && threadConsumer != null) {
+            threadConsumer.interrupt();
+            threadConsumer = null;
+            return "invalid_bd_writer_geo is stoped!";
         }
-        consumer.close();
-        consumer = null;
+
+        if(!isGetMessage && threadConsumer == null) {
+            return "invalid_bd_writer_geo was stoped!";
+        }
+
+        if (isGetMessage && threadConsumer == null) {
+            threadConsumer = new Thread(() -> {
+                while(!Thread.currentThread().isInterrupted()) {
+                    ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+                    consumerRecords.forEach(consumerRecord -> {
+                        try {
+                            System.out.println(consumerRecord.value());
+                            Geo geo = objectMapper.readValue(consumerRecord.value(), Geo.class);
+                            GeoInvalid geoInvalid = new GeoInvalid();
+                            geoInvalid.setNumber(geo.getNumber());
+                            geoInvalid.setCity(geo.getCity());
+                            geoInvalid.setDateTime(geo.getDatetime());
+                            geoInvalid.setLat(geo.getLat());
+                            geoInvalid.setLng(geo.getLng());
+                            geoInvalidRepository.save(geoInvalid);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+                consumer.close(Duration.ofSeconds(1));
+                consumer = null;
+            });
+            threadConsumer.start();
+            return "invalid_bd_writer_geo is start!";
+        }
+
+        return "invalid_bd_writer_geo was started!";
+
+//        while(isGetMessage) {
+//            ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofSeconds(2));
+//            consumerRecords.forEach(consumerRecord -> {
+//                System.out.println("KEY: " + consumerRecord.key());
+//                try {
+//                    Geo geo = objectMapper.readValue(consumerRecord.value(), Geo.class);
+//                    GeoInvalid geoInvalid = new GeoInvalid();
+//                    geoInvalid.setNumber(geo.getNumber());
+//                    geoInvalid.setCity(geo.getCity());
+//                    geoInvalid.setDateTime(geo.getDatetime());
+//                    geoInvalid.setLat(geo.getLat());
+//                    geoInvalid.setLng(geo.getLng());
+//                    geoInvalidRepository.save(geoInvalid);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//        }
+//        consumer.close();
+//        consumer = null;
     }
 }

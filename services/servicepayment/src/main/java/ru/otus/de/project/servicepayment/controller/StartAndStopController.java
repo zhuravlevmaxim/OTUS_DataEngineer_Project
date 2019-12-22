@@ -18,13 +18,15 @@ public class StartAndStopController {
 
     @RequestMapping("/start")
     public ResponseEntity<String> startProducer() {
-        serviceProducer.sendData(true);
-        return ResponseEntity.ok("Producer is start!");
+        return ResponseEntity.ok(
+                serviceProducer.sendData(true)
+        );
     }
 
     @RequestMapping("/stop")
     public ResponseEntity<String> stopProducer() {
-        serviceProducer.sendData(false);
-        return ResponseEntity.ok("Producer is stop!");
+        return ResponseEntity.ok(
+                serviceProducer.sendData(false)
+        );
     }
 }

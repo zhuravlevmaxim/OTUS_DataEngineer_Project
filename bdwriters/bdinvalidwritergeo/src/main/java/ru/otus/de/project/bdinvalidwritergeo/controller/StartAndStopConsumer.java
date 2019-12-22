@@ -19,13 +19,15 @@ public class StartAndStopConsumer {
 
     @RequestMapping("/start")
     public ResponseEntity<String> startConsumer() {
-        consumerGeo.getMessage(true);
-        return ResponseEntity.ok("Consumer is start!");
+        return ResponseEntity.ok(
+                consumerGeo.getMessage(true)
+        );
     }
 
     @RequestMapping("/stop")
     public ResponseEntity<String> stopConsumer() {
-        consumerGeo.getMessage(false);
-        return ResponseEntity.ok("Consumer is stop!");
+        return ResponseEntity.ok(
+                consumerGeo.getMessage(false)
+        );
     }
 }

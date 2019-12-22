@@ -19,13 +19,15 @@ public class StartAndStopConsumer {
 
     @RequestMapping("/start")
     public ResponseEntity<String> startConsumer() {
-        consumerPayment.getMessage(true);
-        return ResponseEntity.ok("Consumer is start!");
+        return ResponseEntity.ok(
+                consumerPayment.getMessage(true)
+        );
     }
 
     @RequestMapping("/stop")
     public ResponseEntity<String> stopConsumer() {
-        consumerPayment.getMessage(false);
-        return ResponseEntity.ok("Consumer is stop!");
+        return ResponseEntity.ok(
+                consumerPayment.getMessage(false)
+        );
     }
 }

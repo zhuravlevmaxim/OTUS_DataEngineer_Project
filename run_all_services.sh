@@ -17,4 +17,10 @@ java -jar ./bdwriters/bdinvalidwritersms/target/bd-invalid-writer-sms.jar  &
 java -jar ./bdwriters/bdvalidwriterpayment/target/bd-valid-writer-payment.jar  &
 java -jar ./bdwriters/bdinvalidwriterpayment/target/bd-invalid-writer-payment.jar  &
 
-java -jar ./counter/counterservices/target/counter-topic-services.jar
+java -jar ./counter/counterservices/target/counter-topic-services.jar &
+
+~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit ./streams/streamgeo/target/scala-2.11/streamgeo-assembly-0.1.jar &
+
+~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit ./streams/streamsms/target/scala-2.11/streamsms-assembly-0.1.jar &
+
+~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit ./streams/streampayment/target/scala-2.11/streampayment-assembly-0.1.jar

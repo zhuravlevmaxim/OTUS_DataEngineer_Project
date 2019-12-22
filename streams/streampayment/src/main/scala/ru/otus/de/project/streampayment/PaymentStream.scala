@@ -8,7 +8,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 object PaymentStream extends App {
   val appName = "stream-payment"
   val kafkaTopic = "payment-service"
-  val kafkaBootstrapServers = "127.0.0.1:9092"
+  val kafkaBootstrapServers = "34.68.47.22:9092"
 
   val spark = SparkSession.builder()
     .master("local[2]")
@@ -44,11 +44,12 @@ object PaymentStream extends App {
         .alias("load_dt"), $"city").sum("payment").as("payments_sum")
 
   transformedStream.writeStream.outputMode("append")
-    .format("csv")
-    .outputMode("append")
-    .option("path", "./payment_stream_result/")
-    .partitionBy("load_dt")
-    .option("checkpointLocation", "./checkpoint/")
+    .format("console")
+//    .format("csv")
+//    .outputMode("append")
+//    .option("path", "./payment_stream_result/")
+//    .partitionBy("load_dt")
+//    .option("checkpointLocation", "./checkpoint/")
     .start()
 
 

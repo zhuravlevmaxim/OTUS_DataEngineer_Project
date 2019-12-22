@@ -9,7 +9,7 @@ import org.apache.spark.sql.functions.{from_json, window}
 object GeoStream extends App {
 
   val appName = "stream-geo"
-  val kafkaTopic = "geo-service"
+  val kafkaTopic = "geo-valid"
   val kafkaBootstrapServers = "127.0.0.1:9092"
 
   val spark = SparkSession.builder()
@@ -43,13 +43,14 @@ object GeoStream extends App {
       window($"timestamp", "20 seconds", "10 seconds")
         .alias("load_dt"), $"city").count()
 
-  transformedStream.writeStream.format("console").start()
+  transformedStream.writeStream
+    .format("console")
 //    .format("csv")
 //    .outputMode("append")
 //    .option("path", "./geo_stream_result/")
 //    .partitionBy("load_dt")
 //    .option("checkpointLocation", "./checkpoint/")
-//    .start()
+    .start()
 
   spark.streams.awaitAnyTermination()
 }

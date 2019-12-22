@@ -1,5 +1,3 @@
-docker-compouse up -d
-
 java -jar ./services/servicegeo/target/service-geo.jar &
 java -jar ./services/servicesms/target/service-sms.jar &
 java -jar ./services/servicepayment/target/service-payment.jar  &

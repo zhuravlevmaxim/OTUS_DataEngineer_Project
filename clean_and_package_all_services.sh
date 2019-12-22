@@ -17,8 +17,8 @@ sudo mvn clean package -f ./bdwriters/bdinvalidwriterpayment
 
 sudo mvn clean package -f ./counter/counterservices
 
-cd ./streams/streamsgeo/ && sbt clean assembly && cd ../../
+cd ./streams/streamgeo/ && sbt clean assembly && cd ../../
 
-cd ./streams/streamssms/ && sbt clean assembly && cd ../../
+cd ./streams/streamsms/ && sbt clean assembly && cd ../../
 
-cd ./streams/streamspayment/ && sbt clean assembly && cd ../../
+cd ./streams/streampayment/ && sbt clean assembly && cd ../../

@@ -7,8 +7,8 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 object SmsStream extends App {
   val appName = "stream-sms"
-  val kafkaTopic = "sms-service"
-  val kafkaBootstrapServers = "34.68.47.22:9092"
+  val kafkaTopic = "sms-valid"
+  val kafkaBootstrapServers = "127.0.0.1:9092"
 
   val spark = SparkSession.builder()
     .master("local[2]")
@@ -39,13 +39,12 @@ object SmsStream extends App {
       window($"timestamp", "20 seconds", "10 seconds")
         .alias("load_dt"), $"city").count()
 
-  transformedStream.writeStream.outputMode("append")
-    .format("console")
-//    .format("csv")
-//    .outputMode("append")
-//    .option("path", "./sms_stream_result/")
-//    .partitionBy("load_dt")
-//    .option("checkpointLocation", "./checkpoint/")
+  transformedStream.writeStream
+    .format("csv")
+    .outputMode("append")
+    .option("path", "./sms_stream_result/")
+    .partitionBy("load_dt")
+    .option("checkpointLocation", "./checkpoint_sms/")
     .start()
 
 

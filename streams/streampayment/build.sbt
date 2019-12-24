@@ -1,6 +1,5 @@
-//name := "streampayment"
-//version := "0.1"
-//scalaVersion := "2.13.1"
+val sparkVersion = "2.4.4"
+val sparkComponents = Seq()
 
 lazy val root = (project in file(".")).
 
@@ -11,9 +10,6 @@ lazy val root = (project in file(".")).
     )),
     name := "streampayment",
     version := "0.1",
-
-    sparkVersion := "2.4.4",
-    sparkComponents := Seq(),
 
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled"),
@@ -26,15 +22,10 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-streaming" % "2.4.4" % "provided",
       "org.apache.spark" %% "spark-sql" % "2.4.4" % "provided",
-
-      "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.4" % "provided"
-
-      //      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-      //      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-      //      "com.holdenkarau" %% "spark-testing-base" % "2.3.0_0.9.0" % "test"
+      "org.apache.spark" %% "spark-core" % "2.4.4" % "provided",
+      "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.4"
     ),
 
-    // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
 
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
@@ -49,12 +40,32 @@ lazy val root = (project in file(".")).
 
     pomIncludeRepository := { x => false },
 
-    // publish settings
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
       if (isSnapshot.value)
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
+
+    assemblyMergeStrategy in assembly := {
+      case PathList("org","aopalliance", xs @ _*) => MergeStrategy.last
+      case PathList("javax", "inject", xs @ _*) => MergeStrategy.last
+      case PathList("javax", "servlet", xs @ _*) => MergeStrategy.last
+      case PathList("javax", "activation", xs @ _*) => MergeStrategy.last
+      case PathList("org", "apache", xs @ _*) => MergeStrategy.last
+      case PathList("com", "google", xs @ _*) => MergeStrategy.last
+      case PathList("com", "esotericsoftware", xs @ _*) => MergeStrategy.last
+      case PathList("com", "codahale", xs @ _*) => MergeStrategy.last
+      case PathList("com", "yammer", xs @ _*) => MergeStrategy.last
+      case "about.html" => MergeStrategy.rename
+      case "META-INF/ECLIPSEF.RSA" => MergeStrategy.last
+      case "META-INF/mailcap" => MergeStrategy.last
+      case "META-INF/mimetypes.default" => MergeStrategy.last
+      case "plugin.properties" => MergeStrategy.last
+      case "log4j.properties" => MergeStrategy.last
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
     }
   )

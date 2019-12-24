@@ -19,11 +19,14 @@ sudo java -jar ./bdwriters/bdinvalidwriterpayment/target/bd-invalid-writer-payme
 
 sudo java -jar ./counter/counterservices/target/counter-topic-services.jar &
 
-cd ./streams/streamgeo/ && sudo ~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit --class ru.otus.de.project.streamgeo.GeoStream ./streams/streamgeo/target/scala-2.11/streamgeo-assembly-0.1.jar &
+cd ./streams/streamgeo/
+sudo ~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit --class ru.otus.de.project.streamgeo.GeoStream ./target/scala-2.11/streamgeo-assembly-0.1.jar &
 cd ../..
 
-cd ./streams/streamsms/ && sudo ~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit --class ru.otus.de.project.streamsms.SmsStream ./streams/streamsms/target/scala-2.11/streamsms-assembly-0.1.jar &
+cd ./streams/streamsms/
+sudo ~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit --class ru.otus.de.project.streamsms.SmsStream ./target/scala-2.11/streamsms-assembly-0.1.jar &
 cd ../..
 
-cd ./streams/streampayment/ && sudo ~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit --class ru.otus.de.project.streampayment.PaymentStream ./streams/streampayment/target/scala-2.11/streampayment-assembly-0.1.jar &
+cd ./streams/streampayment/
+sudo ~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit --class ru.otus.de.project.streampayment.PaymentStream ./target/scala-2.11/streampayment-assembly-0.1.jar &
 cd ../..

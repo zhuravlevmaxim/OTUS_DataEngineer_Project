@@ -1,4 +1,4 @@
-sudo cd ./docker-compouse && docker-compose up -d && cd ..
+cd ./docker-compouse && sudo docker-compose up -d && cd ..
 
 sudo java -jar ./services/servicegeo/target/service-geo.jar &
 sudo java -jar ./services/servicesms/target/service-sms.jar &

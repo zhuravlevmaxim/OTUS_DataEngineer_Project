@@ -9,8 +9,8 @@ import org.apache.spark.sql.functions.{from_json, window}
 object GeoStream extends App {
 
   val appName = "stream-geo"
-  val kafkaTopic = "geo-valid"
-  val kafkaBootstrapServers = "127.0.0.1:9092"
+  val kafkaTopic = "geo-service"
+  val kafkaBootstrapServers = "http://35.238.167.27:9092"
 
   val spark = SparkSession.builder()
     .master("local[2]")

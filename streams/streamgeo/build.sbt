@@ -1,6 +1,8 @@
 //name := "streamgeo"
 //version := "0.1"
 //scalaVersion := "2.13.1"
+val sparkVersion = "2.4.4"
+val sparkComponents = Seq()
 
 lazy val root = (project in file(".")).
 
@@ -12,8 +14,8 @@ lazy val root = (project in file(".")).
     name := "streamgeo",
     version := "0.1",
 
-    sparkVersion := "2.4.4",
-    sparkComponents := Seq(),
+//    sparkVersion := "2.4.4",
+//    sparkComponents := Seq(),
 
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled"),
@@ -24,12 +26,11 @@ lazy val root = (project in file(".")).
     coverageHighlighting := true,
 
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-streaming" % "2.4.4" % "provided",
+      "org.apache.spark" %% "spark-streaming" % "2.4.4",
       "org.apache.spark" %% "spark-sql" % "2.4.4" % "provided",
       "org.apache.spark" %% "spark-core" % "2.4.4" % "provided",
-      "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.4" % "provided"
+      "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.4"
     ),
-
     // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
 

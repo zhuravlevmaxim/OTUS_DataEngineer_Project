@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<header lang="en"  xmlns:th="http://www.thymeleaf.org">
+    <meta charset="UTF-8">
+    <title>PAYMENT SERVICE!</title>
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+</header>
+<body>
+<h1>PAYMENT SERVICE!</h1>
+<div class="buttons">
+    <form class = "button" action="/start" method="get">
+        <input type="submit" value="START" />
+    </form>
+    <form class = "button" action="/stop" method="get">
+        <input type="submit" value="STOP" />
+    </form>
+</div>
+<div class="message">
+    <div><h3 th:text="${text}"></h3></div>
+</div>
+</body>
+</html>

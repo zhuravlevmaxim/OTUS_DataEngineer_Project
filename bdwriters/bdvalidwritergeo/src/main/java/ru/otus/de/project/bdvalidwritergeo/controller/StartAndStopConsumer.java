@@ -2,32 +2,41 @@ package ru.otus.de.project.bdvalidwritergeo.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import ru.otus.de.project.bdvalidwritergeo.consumer.ConsumerGeo;
 
-@RestController
+@Controller
 public class StartAndStopConsumer {
 
     private ConsumerGeo consumerGeo;
+    private String initText = "PLEASE PUSH START BUTTON FOR START VALID BD WRITER!";
 
     @Autowired
     public StartAndStopConsumer(ConsumerGeo consumerGeo) {
         this.consumerGeo = consumerGeo;
     }
 
+    @RequestMapping("/")
+    public String getIndex(Model model) {
+        model.addAttribute("text", initText);
+        return "index";
+    }
+
     @RequestMapping("/start")
-    public ResponseEntity<String> startConsumer() {
-        return ResponseEntity.ok(
+    public String startProducer(Model model) {
+        model.addAttribute("text",
                 consumerGeo.getMessage(true)
         );
+        return "index";
     }
 
     @RequestMapping("/stop")
-    public ResponseEntity<String> stopConsumer() {
-        return ResponseEntity.ok(
+    public String stopProducer(Model model) {
+        model.addAttribute("text",
                 consumerGeo.getMessage(false)
         );
+        return "index";
     }
 }

@@ -52,11 +52,11 @@ public class ServiceProducer {
             producer.close();
             producer = null;
             threadProducer = null;
-            return "producer is stoped!";
+            return "producer_sms is stoped!";
         }
 
         if(!isSendData && threadProducer == null) {
-            return "producer was stoped!";
+            return "producer_sms was stoped!";
         }
 
         if (isSendData && threadProducer == null) {
@@ -75,9 +75,9 @@ public class ServiceProducer {
                 }
             });
             threadProducer.start();
-            return "producer is start!";
+            return "producer_sms is start!";
         }
 
-        return "producer was started!";
+        return "producer_sms was started!";
     }
 }

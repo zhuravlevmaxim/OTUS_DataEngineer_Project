@@ -18,16 +18,22 @@ sudo mvn clean package -f ./bdwriters/bdinvalidwriterpayment
 sudo mvn clean package -f ./counter/counterservices
 
 cd ./streams/streamgeo/
+sudo rm -r ./checkpoint_geo/
+sudo rm -r ./geo_stream_result/
 sudo sbt clean
 sudo sbt assembly
 cd ../../
 
 cd ./streams/streamsms/
+sudo rm -r ./checkpoint_sms/
+sudo rm -r ./sms_stream_result/
 sudo sbt clean
 sudo sbt assembly
 cd ../../
 
 cd ./streams/streampayment/
+sudo rm -r ./checkpoint_payment/
+sudo rm -r ./payment_stream_result/
 sudo sbt clean
 sudo sbt assembly
 cd ../../

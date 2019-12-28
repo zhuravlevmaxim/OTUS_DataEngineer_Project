@@ -25,7 +25,6 @@ lazy val root = (project in file(".")).
       "org.apache.spark" %% "spark-core" % "2.4.4" % "provided",
       "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.4",
       "io.delta" %% "delta-core" % "0.4.0"
-
 ),
 
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,

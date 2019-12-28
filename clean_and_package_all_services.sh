@@ -1,3 +1,7 @@
+cd ./docker-compouse/
+sudo rm -r ./postgres_data/
+cd ..
+
 sudo mvn clean package -f ./services/servicegeo
 sudo mvn clean package -f ./services/servicesms
 sudo mvn clean package -f ./services/servicepayment

@@ -41,7 +41,7 @@ object PaymentStream extends App {
     .withWatermark("timestamp", "20 seconds")
     .groupBy(
       window($"timestamp", "20 seconds", "10 seconds")
-        .alias("load_dt"), $"city").sum("payment").as("payments_sum")
+        .alias("load_dt"), $"city").count()
 
   transformedStream.writeStream
     .format("delta")

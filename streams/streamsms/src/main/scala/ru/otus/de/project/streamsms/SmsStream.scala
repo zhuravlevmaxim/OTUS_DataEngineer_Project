@@ -40,10 +40,9 @@ object SmsStream extends App {
         .alias("load_dt"), $"city").count()
 
   transformedStream.writeStream
-    .format("csv")
+    .format("delta")
     .outputMode("append")
     .option("path", "./sms_stream_result/")
-    .partitionBy("load_dt")
     .option("checkpointLocation", "./checkpoint_sms/")
     .start()
 

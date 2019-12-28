@@ -44,10 +44,9 @@ object GeoStream extends App {
         .alias("load_dt"), $"city").count()
 
   transformedStream.writeStream
-    .format("csv")
+    .format("delta")
     .outputMode("append")
     .option("path", "./geo_stream_result/")
-    .partitionBy("load_dt")
     .option("checkpointLocation", "./checkpoint_geo/")
     .start()
 

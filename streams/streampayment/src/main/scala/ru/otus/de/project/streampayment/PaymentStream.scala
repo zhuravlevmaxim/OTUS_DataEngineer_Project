@@ -44,10 +44,9 @@ object PaymentStream extends App {
         .alias("load_dt"), $"city").sum("payment").as("payments_sum")
 
   transformedStream.writeStream
-    .format("csv")
+    .format("delta")
     .outputMode("append")
     .option("path", "./payment_stream_result/")
-    .partitionBy("load_dt")
     .option("checkpointLocation", "./checkpoint_payment/")
     .start()
 
